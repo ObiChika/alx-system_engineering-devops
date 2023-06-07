@@ -1,0 +1,1 @@
+entry all shell commands
