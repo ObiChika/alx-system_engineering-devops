@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# This script configures the local SSH client to use the private key ~/.ssh/school and refuse password authentication.
+
+Host *
+	PasswordAuthentication no
+	IdentifyFile ~/.ssh/school
+
