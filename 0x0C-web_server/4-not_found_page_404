@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# This script installs and configures Nginx on an Ubuntu server
+
+# Display message for updating and installing Nginx
+echo -e "Updating and installing Nginx...\n"
+sudo apt-get update -y -qq
+sudo apt-get install nginx -y
+
+# Display message for setting up minor configurations
+echo -e "\nSetting up some minor configurations...\n"
+
+# Start Nginx service
+sudo service nginx start
+
+# Allow Nginx on firewall
+sudo ufw allow 'Nginx HTTP'
+
+# Give the user ownership to website files for easy editing
+sudo chown -R "$USER":"$USER" /var/www/html
+sudo chmod -R 755 /var/www/html
+
+# Display message for backing up default index
+echo -e "Backing up the default index file...\n"
+sudo mv /var/www/html/index.nginx-debian.html /var/www/html/index.nginx-debian.html.bckp
+
+# Display message for creating a new index file
+echo -e "Creating a new index file with 'Hello World!'...\n"
+echo -e "Hello World!" | sudo dd status=none of=/var/www/html/index.html
+
+# Configure redirection and custom 404 page
+echo -e "\nConfiguring redirection and custom 404 page...\n"
+sudo bash -c 'echo "server {
+    listen 80;
+    listen [::]:80;
+
+    server_name _;
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    error_page 404 /custom_404.html;
+    location = /custom_404.html {
+        root /var/www/html;
+        internal;
+    }
+    
+    # Add the following lines to include ETag header
+    location ~* \.(html)$ {
+        etag on;
+    }
+}" > /etc/nginx/sites-available/default'
+
+# Create custom 404 page with correct content
+echo -e "\nCreating custom 404 page...\n"
+echo -e "Ceci n'est pas une page" | sudo dd status=none of=/var/www/html/custom_404.html
+
+# Restart Nginx
+sudo service nginx restart
+
+# Display completion message
+echo -e "\nNginx installation and configuration completed successfully. ✅\n"
